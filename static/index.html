@@ -8,13 +8,13 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- KaTeX for Math Rendering -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <!-- KaTeX for Math Rendering (Cloudflare CDN for reliable mobile delivery) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 
-  <!-- Marked for Markdown -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Marked for Markdown (Cloudflare CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 
   <!-- Highlight.js for Code Blocks -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
@@ -23,10 +23,24 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: #0b0f19;
       color: #f1f5f9;
+      margin: 0;
       -webkit-tap-highlight-color: transparent;
+    }
+    /* Critical fallback rules so mobile never shows broken MathML or hidden modals */
+    .hidden {
+      display: none !important;
+    }
+    .katex-mathml {
+      position: absolute !important;
+      clip: rect(1px, 1px, 1px, 1px) !important;
+      padding: 0 !important;
+      border: 0 !important;
+      height: 1px !important;
+      width: 1px !important;
+      overflow: hidden !important;
     }
     code, pre {
       font-family: 'JetBrains Mono', monospace;
@@ -143,10 +157,10 @@
               ¡Hola! Soy tu Profesor de Matemáticas y Física
             </h2>
             <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Escribe una ecuación, sube una foto de tu cuaderno o graba una nota de voz. También puedes tocar un ejemplo rápido para probar:
+              Escribe una ecuación, sube una foto de tu cuaderno o graba una nota de voz. Toca un tema para cargar un ejemplo:
             </p>
 
-            <!-- Compact Quick Examples Chips -->
+            <!-- Compact Quick Examples Chips (Plain text labels, no duplicate math blocks) -->
             <div class="flex flex-wrap gap-1.5 sm:gap-2 pt-1">
               <button onclick="loadPreset('linear')" class="text-xs px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-sky-300 border border-slate-700/80 transition font-medium">
                 📐 Ecuación 2x - 1 = 5
@@ -203,14 +217,14 @@
             <button onclick="document.getElementById('imageInput').click()" title="Subir o tomar foto del problema"
               class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5 text-xs font-medium">
               <span>📷</span>
-              <span class="hidden xs:inline sm:inline">Foto</span>
+              <span>Foto</span>
             </button>
 
             <!-- Record Microphone Button -->
             <button id="micButton" onclick="toggleRecording()" title="Grabar pregunta con micrófono"
               class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5 text-xs font-medium">
               <span id="micIcon">🎙️</span>
-              <span class="hidden xs:inline sm:inline">Voz</span>
+              <span>Voz</span>
               <span id="micTimer" class="hidden text-xs font-mono text-rose-400 font-semibold">00:00</span>
             </button>
 
@@ -372,6 +386,6 @@ plt.grid(True, alpha=0.3)</textarea>
     </div>
   </div>
 
-  <script src="/static/app.js?v=4"></script>
+  <script src="/static/app.js?v=5"></script>
 </body>
 </html>
