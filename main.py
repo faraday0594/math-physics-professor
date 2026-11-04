@@ -147,11 +147,8 @@ async def solve_problem(
 ):
     resolved_key, resolved_base_url, resolved_model, asr_model = get_config(api_key, model, base_url)
 
-    if not resolved_key:
-        raise HTTPException(status_code=400, detail="Falta configurar la API Key de MiniMax.")
-
     transcribed_text = ""
-    if audio is not None:
+    if audio is not None and resolved_key:
         audio_bytes = await audio.read()
         if len(audio_bytes) > 0:
             try:
@@ -175,6 +172,14 @@ async def solve_problem(
 
     if not combined_user_text and image is None:
         raise HTTPException(status_code=400, detail="Por favor envía un problema en texto, una imagen o un audio.")
+
+    if not resolved_key:
+        local_solution = solve_locally_as_professor(
+            user_prompt=combined_user_text or "2*x - 1 = 0",
+            api_notice="Modo Científico Local Activo (SymPy + Matplotlib)",
+        )
+        local_solution["transcribed_audio"] = transcribed_text
+        return JSONResponse(local_solution)
 
     # Parse conversation history
     try:
