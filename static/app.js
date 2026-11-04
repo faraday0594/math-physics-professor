@@ -379,22 +379,23 @@ function appendTeacherResponse(data) {
   const lessonId = addClassroomRecord(data.user_prompt || lastSubmittedPrompt || "2x - 1 = 5", data.answer || "");
 
   wrapper.innerHTML = `
-    <div class="bg-slate-900/95 border border-slate-800 rounded-2xl p-6 shadow-xl">
-      <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4 flex-wrap gap-2">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-sm font-bold">∑</div>
-          <div>
-            <div class="text-sm font-bold text-white">Profesor MiniMax</div>
-            <div class="text-[11px] text-slate-400">Modelo: ${escapeHtml(data.model_used || "MiniMax")}</div>
+    <div class="bg-slate-900/95 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-3.5 flex-wrap gap-2.5">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-sm font-bold shrink-0">∑</div>
+          <div class="min-w-0">
+            <div class="text-sm font-bold text-white truncate">Profesor MiniMax</div>
+            <div class="text-[11px] text-slate-400 truncate">Modelo: ${escapeHtml(data.model_used || "MiniMax")}</div>
           </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
           <button id="classroomBtn_${lessonId}" onclick="openClassroomExplanation(${lessonId})"
-            class="text-xs px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-semibold shadow-md shadow-amber-500/20 transition flex items-center gap-1.5">
-            <span>🎓</span> Ver Explicación en Clase (Slides)
+            class="flex-1 sm:flex-initial justify-center text-xs px-3.5 py-2 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-semibold shadow-md shadow-amber-500/20 transition flex items-center gap-1.5">
+            <span>🎓</span>
+            <span>Explicación en Clase (Slides)</span>
           </button>
-          <span class="text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            ✓ Verificado con Código
+          <span class="hidden sm:inline-block text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+            ✓ Verificado
           </span>
         </div>
       </div>
@@ -406,13 +407,14 @@ function appendTeacherResponse(data) {
       ${plotsHtml}
       ${scriptsHtml}
 
-      <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between flex-wrap gap-3">
+      <div class="mt-5 pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="text-xs text-slate-400">
-          💡 ¿Quieres entender <strong>cómo se intuye cada paso</strong> con diapositivas interactivas y gráficas progresivas?
+          💡 ¿Quieres entender <strong>cómo se intuye cada paso</strong> con diapositivas interactivas?
         </div>
         <button onclick="openClassroomExplanation(${lessonId})"
-          class="text-xs px-4 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-semibold transition flex items-center gap-2">
-          <span>🎓</span> Abrir Clase Magistral Interactiva (Paso a Paso)
+          class="w-full sm:w-auto justify-center text-xs px-4 py-2.5 sm:py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-semibold transition flex items-center gap-2 shrink-0">
+          <span>🎓</span>
+          <span>Abrir Clase Magistral (Paso a Paso)</span>
         </button>
       </div>
     </div>
@@ -884,27 +886,27 @@ function renderCurrentClassroomSlide() {
 
   const container = document.getElementById("classroomSlideContainer");
   container.innerHTML = `
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
       <!-- Left Pedagogical Column -->
-      <div class="lg:col-span-7 space-y-4">
+      <div class="lg:col-span-7 space-y-3.5 sm:space-y-4 min-w-0">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold">
           <span>Paso ${activeSlideIndex + 1} de ${slides.length}</span>
           <span>•</span>
-          <span>${escapeHtml(slide.badge || "Explicación Guiada")}</span>
+          <span class="truncate">${escapeHtml(slide.badge || "Explicación Guiada")}</span>
         </div>
 
-        <h2 class="text-xl md:text-2xl font-bold text-white leading-snug">${escapeHtml(slide.title || "")}</h2>
+        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-white leading-snug">${escapeHtml(slide.title || "")}</h2>
 
         ${
           slide.intuition_callout
-            ? `<div class="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 to-orange-500/10 border-l-4 border-amber-400 text-sm text-amber-100 leading-relaxed">
+            ? `<div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 to-orange-500/10 border-l-4 border-amber-400 text-xs sm:text-sm text-amber-100 leading-relaxed">
                  <strong class="text-amber-300 block text-xs uppercase tracking-wider mb-1">💡 ¿Cómo intuirlo?</strong>
                  ${escapeHtml(slide.intuition_callout)}
                </div>`
             : ""
         }
 
-        <div class="prose-math text-sm text-slate-200 leading-relaxed bg-slate-950/50 border border-slate-800/80 rounded-2xl p-5">
+        <div class="prose-math text-sm text-slate-200 leading-relaxed bg-slate-950/50 border border-slate-800/80 rounded-2xl p-3.5 sm:p-5">
           ${renderedContent}
         </div>
 
@@ -913,11 +915,13 @@ function renderCurrentClassroomSlide() {
       </div>
 
       <!-- Right Visual Column -->
-      <div class="lg:col-span-5 lg:sticky lg:top-2">
+      <div class="lg:col-span-5 lg:sticky lg:top-2 min-w-0">
         ${visualColumnHtml}
       </div>
     </div>
   `;
+
+  container.scrollTop = 0;
 
   renderMathInElement(container, {
     delimiters: [
@@ -930,7 +934,7 @@ function renderCurrentClassroomSlide() {
   });
 
   // Update footer navigation buttons
-  document.getElementById("slideCounterText").textContent = `Diapositiva ${activeSlideIndex + 1} de ${slides.length}`;
+  document.getElementById("slideCounterText").textContent = `${activeSlideIndex + 1} / ${slides.length}`;
   document.getElementById("prevSlideBtn").disabled = activeSlideIndex === 0;
   document.getElementById("nextSlideBtn").disabled = activeSlideIndex === slides.length - 1;
 }

@@ -2,8 +2,8 @@
 <html lang="es" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profesor MiniMax — Tutor Multimodal de Matemáticas y Física</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Profesor MiniMax — Matemáticas y Física</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,9 +26,14 @@
       font-family: 'Inter', sans-serif;
       background-color: #0b0f19;
       color: #f1f5f9;
+      -webkit-tap-highlight-color: transparent;
     }
     code, pre {
       font-family: 'JetBrains Mono', monospace;
+    }
+    .prose-math {
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
     .prose-math p {
       margin-bottom: 0.85rem;
@@ -37,11 +42,11 @@
     .prose-math h1, .prose-math h2, .prose-math h3 {
       color: #38bdf8;
       font-weight: 700;
-      margin-top: 1.25rem;
+      margin-top: 1.15rem;
       margin-bottom: 0.5rem;
     }
     .prose-math ul, .prose-math ol {
-      margin-left: 1.5rem;
+      margin-left: 1.25rem;
       margin-bottom: 0.85rem;
       list-style-type: disc;
     }
@@ -52,44 +57,49 @@
       background: rgba(15, 23, 42, 0.75);
       border: 1px solid rgba(56, 189, 248, 0.2);
       border-radius: 0.75rem;
-      padding: 0.85rem 1rem;
-      margin: 0.9rem 0 !important;
+      padding: 0.75rem 0.85rem;
+      margin: 0.85rem 0 !important;
       overflow-x: auto;
+      overflow-y: hidden;
+      max-width: 100%;
+    }
+    .katex {
+      font-size: 1.02em;
     }
     /* Custom scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #0f172a; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
   </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body class="h-[100dvh] flex flex-col overflow-hidden">
 
   <!-- Header -->
-  <header class="bg-slate-900/90 border-b border-slate-800 px-6 py-3.5 flex items-center justify-between shrink-0">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 font-bold text-lg">
+  <header class="bg-slate-900/95 border-b border-slate-800/90 px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 shrink-0">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 font-bold text-base sm:text-lg shrink-0">
         ∑
       </div>
-      <div>
-        <div class="flex items-center gap-2.5">
-          <h1 class="font-bold text-lg tracking-tight text-white">Profesor MiniMax</h1>
-          <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 font-medium">
+      <div class="min-w-0">
+        <div class="flex items-center gap-2">
+          <h1 class="font-bold text-base sm:text-lg tracking-tight text-white truncate">Profesor MiniMax</h1>
+          <span class="hidden sm:inline-block text-[11px] px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 font-medium shrink-0">
             Matemáticas & Física
           </span>
         </div>
-        <p class="text-xs text-slate-400">Tutor Multimodal (Texto • Foto • Audio) + Sandbox Científico Python (SymPy / Matplotlib)</p>
+        <p class="text-[11px] text-slate-400 truncate hidden sm:block">Tutor Multimodal (Texto • Foto • Audio) + Motor Científico SymPy & Matplotlib</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
       <!-- Quick model selector -->
       <div class="hidden md:flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-1.5 text-xs">
         <span class="text-slate-400">Modelo:</span>
         <select id="modelSelect" class="bg-transparent text-sky-400 font-medium focus:outline-none cursor-pointer">
-          <option value="MiniMax-M3.1-Flash" class="bg-slate-900 text-white">MiniMax-M3.1-Flash (Multimodal + Thinking)</option>
-          <option value="MiniMax-M3" class="bg-slate-900 text-white">MiniMax-M3 (Flagship 1M Context)</option>
-          <option value="MiniMax-VL-01" class="bg-slate-900 text-white">MiniMax-VL-01 (Visión Especializada)</option>
+          <option value="MiniMax-M3.1-Flash" class="bg-slate-900 text-white">MiniMax-M3.1-Flash</option>
+          <option value="MiniMax-M3" class="bg-slate-900 text-white">MiniMax-M3</option>
+          <option value="MiniMax-VL-01" class="bg-slate-900 text-white">MiniMax-VL-01</option>
           <option value="MiniMax-Text-01" class="bg-slate-900 text-white">MiniMax-Text-01</option>
         </select>
       </div>
@@ -104,194 +114,141 @@
         </select>
       </div>
 
-      <button onclick="toggleModal('sandboxModal')" class="text-xs px-3 py-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1.5 font-medium">
-        <span>⚡</span> Laboratorio Python Directo
+      <button onclick="toggleModal('sandboxModal')" class="text-xs px-2.5 sm:px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1.5 font-medium">
+        <span>⚡</span>
+        <span class="hidden sm:inline">Laboratorio Python</span>
+        <span class="sm:hidden">Lab</span>
       </button>
 
-      <button onclick="toggleModal('settingsModal')" class="text-xs px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
-        <span>⚙️</span> API Config
+      <button onclick="toggleModal('settingsModal')" class="text-xs px-2.5 sm:px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+        <span>⚙️</span>
+        <span class="hidden sm:inline">Config</span>
       </button>
     </div>
   </header>
 
-  <!-- Main Workspace -->
-  <div class="flex-1 flex overflow-hidden">
+  <!-- Main Chat Workspace (Full Width, No Left Sidebar) -->
+  <main class="flex-1 flex flex-col overflow-hidden bg-slate-950/60">
 
-    <!-- Left Sidebar: Quick Examples -->
-    <aside class="w-72 bg-slate-900/50 border-r border-slate-800/80 p-4 hidden xl:flex flex-col justify-between overflow-y-auto shrink-0">
-      <div class="space-y-5">
-        <div>
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">Ejemplos Rápidos (Clic para probar)</h2>
-          <div class="space-y-2">
-            <button onclick="loadPreset('linear')" class="w-full text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition group">
-              <div class="text-xs font-semibold text-sky-400 group-hover:text-sky-300">📐 Álgebra Lineal</div>
-              <div class="text-xs text-slate-300 mt-0.5">Resolver y graficar: $2x - 1 = 5$</div>
-            </button>
-
-            <button onclick="loadPreset('projectile')" class="w-full text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition group">
-              <div class="text-xs font-semibold text-amber-400 group-hover:text-amber-300">🚀 Física: Tiro Parabólico</div>
-              <div class="text-xs text-slate-300 mt-0.5">Proyectil a $v_0=25\text{ m/s}$ y $\theta=40^\circ$. Altura máxima y trayectoria.</div>
-            </button>
-
-            <button onclick="loadPreset('calculus')" class="w-full text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition group">
-              <div class="text-xs font-semibold text-purple-400 group-hover:text-purple-300">📈 Cálculo Diferencial</div>
-              <div class="text-xs text-slate-300 mt-0.5">Puntos críticos y recta tangente de $f(x) = x^3 - 3x + 1$</div>
-            </button>
-
-            <button onclick="loadPreset('harmonic')" class="w-full text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition group">
-              <div class="text-xs font-semibold text-emerald-400 group-hover:text-emerald-300">🌊 Física: Oscilador Amortiguado</div>
-              <div class="text-xs text-slate-300 mt-0.5">Masa-resorte amortiguado: posición $x(t)$ y envolvente de energía.</div>
-            </button>
-
-            <button onclick="loadPreset('integral')" class="w-full text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition group">
-              <div class="text-xs font-semibold text-rose-400 group-hover:text-rose-300">∫ Cálculo Integral (Nivel Avanzado)</div>
-              <div class="text-xs text-slate-300 mt-0.5">Área e integral definida de $f(x) = x^3 - 4x^2 + 3x + 2$ entre $0$ y $3$.</div>
-            </button>
-
-            <button onclick="loadPreset('ode')" class="w-full text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition group">
-              <div class="text-xs font-semibold text-cyan-400 group-hover:text-cyan-300">🌀 Ecuación Diferencial (EDO 2º Orden)</div>
-              <div class="text-xs text-slate-300 mt-0.5">Resolver $y'' + 2y' + 10y = 0$ con retrato en espacio de fases.</div>
-            </button>
+    <!-- Messages Container -->
+    <div id="chatContainer" class="flex-1 overflow-y-auto px-3 py-4 sm:p-6 space-y-4 sm:space-y-6">
+      <!-- Welcome Card -->
+      <div class="max-w-3xl mx-auto bg-slate-900/90 border border-slate-800/90 rounded-2xl p-4 sm:p-6 shadow-xl">
+        <div class="flex items-start gap-3 sm:gap-4">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xl sm:text-2xl shrink-0">
+            👨‍🏫
           </div>
-        </div>
+          <div class="space-y-2.5 min-w-0 flex-1">
+            <h2 class="text-base sm:text-lg font-bold text-white leading-snug">
+              ¡Hola! Soy tu Profesor de Matemáticas y Física
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Escribe una ecuación, sube una foto de tu cuaderno o graba una nota de voz. También puedes tocar un ejemplo rápido para probar:
+            </p>
 
-        <div class="p-3.5 rounded-xl bg-sky-950/30 border border-sky-500/20 text-xs space-y-2">
-          <div class="font-semibold text-sky-300 flex items-center gap-1.5">
-            <span>🧪</span> Simulación / Demo Instantánea
-          </div>
-          <p class="text-slate-400 leading-relaxed">
-            También puedes ejecutar una **explicación demostrativa completa con SymPy + Matplotlib local** para ver cómo el profesor resuelve $2x-1=5$ o Física sin gastar créditos de API:
-          </p>
-          <button onclick="runInteractiveTeacherDemo('2x-1=5')" class="w-full py-2 px-3 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 font-medium transition">
-            ▶️ Demo Profesor: "2x - 1 = 5"
-          </button>
-          <button onclick="runInteractiveTeacherDemo('physics')" class="w-full py-2 px-3 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 font-medium transition">
-            ▶️ Demo Profesor: Tiro Parabólico
-          </button>
-        </div>
-      </div>
-
-      <div class="pt-4 border-t border-slate-800 text-[11px] text-slate-500 space-y-1">
-        <div>Motor Voz ASR: <span class="text-slate-300 font-mono">asr-1.0</span></div>
-        <div>Sandbox: <span class="text-slate-300 font-mono">SymPy + NumPy + Matplotlib</span></div>
-      </div>
-    </aside>
-
-    <!-- Center Chat Area -->
-    <main class="flex-1 flex flex-col overflow-hidden bg-slate-950/50">
-
-      <!-- Messages Container -->
-      <div id="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-6">
-        <!-- Welcome Card -->
-        <div class="max-w-3xl mx-auto bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-2xl shrink-0">
-              👨‍🏫
-            </div>
-            <div class="space-y-2">
-              <h2 class="text-lg font-bold text-white">¡Hola! Soy tu Profesor de Matemáticas y Física impulsado por MiniMax</h2>
-              <p class="text-sm text-slate-300 leading-relaxed">
-                Puedes enviarme tus ejercicios de tres formas combinadas:
-              </p>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-1">
-                <div class="p-3 rounded-xl bg-slate-800/60 border border-slate-700/60 text-xs">
-                  <div class="font-semibold text-sky-400 mb-1">⌨️ 1. Texto o Ecuación</div>
-                  <div class="text-slate-400">Escribe ej: <code>2x - 1 = 5</code> o describe un problema físico.</div>
-                </div>
-                <div class="p-3 rounded-xl bg-slate-800/60 border border-slate-700/60 text-xs">
-                  <div class="font-semibold text-emerald-400 mb-1">📷 2. Foto del Problema</div>
-                  <div class="text-slate-400">Sube o pega (<code>Ctrl+V</code>) una captura de tu cuaderno o libro.</div>
-                </div>
-                <div class="p-3 rounded-xl bg-slate-800/60 border border-slate-700/60 text-xs">
-                  <div class="font-semibold text-amber-400 mb-1">🎙️ 3. Nota de Voz / Audio</div>
-                  <div class="text-slate-400">Graba tu pregunta con el micrófono o sube un archivo de audio.</div>
-                </div>
-              </div>
+            <!-- Compact Quick Examples Chips -->
+            <div class="flex flex-wrap gap-1.5 sm:gap-2 pt-1">
+              <button onclick="loadPreset('linear')" class="text-xs px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-sky-300 border border-slate-700/80 transition font-medium">
+                📐 Ecuación 2x - 1 = 5
+              </button>
+              <button onclick="loadPreset('integral')" class="text-xs px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-rose-300 border border-slate-700/80 transition font-medium">
+                ∫ Integral y Área
+              </button>
+              <button onclick="loadPreset('projectile')" class="text-xs px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-amber-300 border border-slate-700/80 transition font-medium">
+                🚀 Tiro Parabólico
+              </button>
+              <button onclick="loadPreset('calculus')" class="text-xs px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-purple-300 border border-slate-700/80 transition font-medium">
+                📈 Derivada y Máximos
+              </button>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Attachment Preview Bar -->
-      <div id="attachmentBar" class="hidden px-6 py-2.5 bg-slate-900/95 border-t border-slate-800 flex items-center gap-4 flex-wrap">
-        <!-- Image preview -->
-        <div id="imagePreviewBadge" class="hidden flex items-center gap-2.5 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs">
-          <img id="imagePreviewThumb" src="" class="w-8 h-8 object-cover rounded-lg border border-slate-600" />
-          <span id="imagePreviewName" class="text-slate-200 max-w-[160px] truncate">imagen.png</span>
-          <button onclick="clearImageAttachment()" class="text-slate-400 hover:text-rose-400 font-bold ml-1">✕</button>
-        </div>
-
-        <!-- Audio preview -->
-        <div id="audioPreviewBadge" class="hidden flex items-center gap-2.5 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs">
-          <span class="text-amber-400 text-base">🎙️</span>
-          <audio id="audioPreviewPlayer" controls class="h-7 w-44"></audio>
-          <span id="audioPreviewName" class="text-slate-300">Audio listo</span>
-          <button onclick="clearAudioAttachment()" class="text-slate-400 hover:text-rose-400 font-bold ml-1">✕</button>
-        </div>
+    <!-- Attachment Preview Bar -->
+    <div id="attachmentBar" class="hidden px-3.5 sm:px-6 py-2 bg-slate-900/95 border-t border-slate-800 flex items-center gap-3 flex-wrap">
+      <!-- Image preview -->
+      <div id="imagePreviewBadge" class="hidden flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1 text-xs">
+        <img id="imagePreviewThumb" src="" class="w-7 h-7 object-cover rounded-lg border border-slate-600" />
+        <span id="imagePreviewName" class="text-slate-200 max-w-[140px] truncate">imagen.png</span>
+        <button onclick="clearImageAttachment()" class="text-slate-400 hover:text-rose-400 font-bold ml-1 p-1">✕</button>
       </div>
 
-      <!-- Input Composer Bar -->
-      <div class="p-4 bg-slate-900/90 border-t border-slate-800 shrink-0">
-        <div class="max-w-4xl mx-auto flex items-end gap-2.5">
-          <!-- Hidden File Inputs -->
-          <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageSelected(event)" />
-          <input type="file" id="audioFileInput" accept="audio/*" class="hidden" onchange="handleAudioFileSelected(event)" />
+      <!-- Audio preview -->
+      <div id="audioPreviewBadge" class="hidden flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1 text-xs">
+        <span class="text-amber-400 text-sm">🎙️</span>
+        <audio id="audioPreviewPlayer" controls class="h-7 w-36 sm:w-44"></audio>
+        <button onclick="clearAudioAttachment()" class="text-slate-400 hover:text-rose-400 font-bold ml-1 p-1">✕</button>
+      </div>
+    </div>
 
-          <!-- Upload Image Button -->
-          <button onclick="document.getElementById('imageInput').click()" title="Subir foto de problema (o pegar con Ctrl+V)"
-            class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition shrink-0">
-            📷
-          </button>
+    <!-- Mobile-First Unified Input Composer -->
+    <div class="p-2.5 sm:p-4 bg-slate-900/95 border-t border-slate-800/90 shrink-0">
+      <div class="max-w-3xl mx-auto bg-slate-950 border border-slate-700/90 focus-within:border-sky-500/80 rounded-2xl p-2 sm:p-2.5 shadow-lg transition">
+        <!-- Hidden File Inputs -->
+        <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageSelected(event)" />
+        <input type="file" id="audioFileInput" accept="audio/*" class="hidden" onchange="handleAudioFileSelected(event)" />
 
-          <!-- Record Microphone Button -->
-          <button id="micButton" onclick="toggleRecording()" title="Grabar pregunta con micrófono"
-            class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition shrink-0 flex items-center gap-1.5">
-            <span id="micIcon">🎙️</span>
-            <span id="micTimer" class="hidden text-xs font-mono text-rose-400 font-semibold">00:00</span>
-          </button>
+        <!-- Textarea Full Width -->
+        <textarea id="promptInput" rows="2"
+          placeholder="Escribe tu problema (ej: 2x - 1 = 5), sube foto o graba voz..."
+          class="w-full bg-transparent focus:outline-none px-2 py-1 text-base sm:text-sm text-white placeholder-slate-500 resize-none leading-relaxed"
+          onkeydown="if(event.key === 'Enter' && !event.shiftKey && window.innerWidth > 640) { event.preventDefault(); sendProblem(); }"></textarea>
 
-          <!-- Upload Audio File Button -->
-          <button onclick="document.getElementById('audioFileInput').click()" title="Subir archivo de audio (.mp3, .wav, .ogg, .m4a)"
-            class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition shrink-0 text-sm">
-            🎵
-          </button>
+        <!-- Bottom Action Toolbar inside Composer -->
+        <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-800/80 mt-1">
+          <div class="flex items-center gap-1.5">
+            <!-- Upload Image Button -->
+            <button onclick="document.getElementById('imageInput').click()" title="Subir o tomar foto del problema"
+              class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5 text-xs font-medium">
+              <span>📷</span>
+              <span class="hidden xs:inline sm:inline">Foto</span>
+            </button>
 
-          <!-- Textarea -->
-          <div class="flex-1 relative">
-            <textarea id="promptInput" rows="2"
-              placeholder="Escribe tu problema (ej: 2x - 1 = 5), pega una foto (Ctrl+V) o graba un audio..."
-              class="w-full rounded-xl bg-slate-950 border border-slate-700/90 focus:border-sky-500 focus:outline-none px-4 py-2.5 text-sm text-white placeholder-slate-500 resize-none"
-              onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendProblem(); }"></textarea>
+            <!-- Record Microphone Button -->
+            <button id="micButton" onclick="toggleRecording()" title="Grabar pregunta con micrófono"
+              class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5 text-xs font-medium">
+              <span id="micIcon">🎙️</span>
+              <span class="hidden xs:inline sm:inline">Voz</span>
+              <span id="micTimer" class="hidden text-xs font-mono text-rose-400 font-semibold">00:00</span>
+            </button>
+
+            <!-- Upload Audio File Button -->
+            <button onclick="document.getElementById('audioFileInput').click()" title="Subir archivo de audio"
+              class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/80 transition flex items-center gap-1 text-xs font-medium">
+              <span>🎵</span>
+            </button>
           </div>
 
           <!-- Send Button -->
           <button id="sendBtn" onclick="sendProblem()"
-            class="px-5 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-sky-500/20 transition shrink-0 flex items-center gap-2">
+            class="px-4 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 active:scale-95 text-white font-semibold text-xs sm:text-sm shadow-md shadow-sky-500/20 transition flex items-center gap-1.5">
             <span>Resolver</span>
             <span>➔</span>
           </button>
         </div>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 
   <!-- Settings Modal -->
-  <div id="settingsModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+  <div id="settingsModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-base text-white">⚙️ Configuración de MiniMax API</h3>
-        <button onclick="toggleModal('settingsModal')" class="text-slate-400 hover:text-white">✕</button>
+        <h3 class="font-bold text-base text-white">⚙️ Configuración del Profesor</h3>
+        <button onclick="toggleModal('settingsModal')" class="text-slate-400 hover:text-white p-1">✕</button>
       </div>
       <form id="settingsForm" onsubmit="event.preventDefault(); saveAndCloseSettings();" class="space-y-3 text-xs">
         <div>
           <label class="block text-slate-300 font-medium mb-1">API Key de MiniMax</label>
-          <input id="customApiKey" type="password" placeholder="sk-api-..." autocomplete="current-password"
-            class="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-white font-mono focus:border-sky-500 focus:outline-none" />
+          <input id="customApiKey" type="password" placeholder="sk-cp-..." autocomplete="current-password"
+            class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-white font-mono focus:border-sky-500 focus:outline-none text-sm" />
           <p id="currentKeyStatus" class="text-[11px] text-slate-400 mt-1">Cargando estado de clave en servidor...</p>
         </div>
         <div>
           <label class="block text-slate-300 font-medium mb-1">Endpoint Base URL</label>
-          <select id="customBaseUrl" class="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-white focus:border-sky-500 focus:outline-none">
+          <select id="customBaseUrl" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-white focus:border-sky-500 focus:outline-none text-sm">
             <option value="https://api.minimax.io/v1">Global: https://api.minimax.io/v1 (Recomendado)</option>
             <option value="https://api.minimaxi.com/v1">China: https://api.minimaxi.com/v1</option>
           </select>
@@ -300,8 +257,8 @@
           ✓ Clave guardada permanentemente en el servidor y navegador.
         </div>
         <div class="flex justify-end gap-2 pt-2">
-          <button type="submit" id="saveKeyBtn" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold">
-            Guardar Permanentemente
+          <button type="submit" id="saveKeyBtn" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold">
+            Guardar Configuración
           </button>
         </div>
       </form>
@@ -309,17 +266,17 @@
   </div>
 
   <!-- Direct Python Sandbox Modal -->
-  <div id="sandboxModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full p-6 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
+  <div id="sandboxModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full p-4 sm:p-6 space-y-3 sm:space-y-4 shadow-2xl max-h-[92dvh] flex flex-col">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
-          <h3 class="font-bold text-base text-white">⚡ Laboratorio Científico Python (SymPy / NumPy / Matplotlib)</h3>
-          <p class="text-xs text-slate-400">Ejecuta scripts matemáticos y genera gráficas directamente en el motor del profesor.</p>
+          <h3 class="font-bold text-sm sm:text-base text-white">⚡ Laboratorio Científico Python</h3>
+          <p class="text-[11px] sm:text-xs text-slate-400">Ejecuta scripts con SymPy, NumPy y Matplotlib directamente.</p>
         </div>
-        <button onclick="toggleModal('sandboxModal')" class="text-slate-400 hover:text-white">✕</button>
+        <button onclick="toggleModal('sandboxModal')" class="text-slate-400 hover:text-white p-1">✕</button>
       </div>
 
-      <textarea id="directSandboxCode" rows="10"
+      <textarea id="directSandboxCode" rows="8"
         class="w-full rounded-xl bg-slate-950 border border-slate-700 p-3 font-mono text-xs text-emerald-300 focus:outline-none focus:border-emerald-500">import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
@@ -339,79 +296,82 @@ plt.figure(figsize=(7.5, 4.5))
 plt.plot(x_vals, y_vals, label='y = 2x - 1', color='#0284c7', linewidth=2.5)
 plt.axhline(5, color='#f59e0b', linestyle='--', linewidth=1.8, label='y = 5')
 plt.scatter([float(solucion)], [5], color='#ef4444', s=90, zorder=5, label=f'Solución ({solucion}, 5)')
-plt.annotate(f'  x = {solucion}, y = 5', (float(solucion), 5), xytext=(float(solucion)+0.4, 3.2),
-             arrowprops=dict(arrowstyle='->', color='#ef4444'))
 plt.title('Resolución Gráfica de 2x - 1 = 5')
 plt.xlabel('x')
 plt.ylabel('y')
 plt.legend()
 plt.grid(True, alpha=0.3)</textarea>
 
-      <div class="flex justify-between items-center">
-        <span class="text-xs text-slate-400">Librerías listas: <code>sympy (sp)</code>, <code>numpy (np)</code>, <code>scipy</code>, <code>matplotlib.pyplot (plt)</code></span>
-        <button onclick="executeDirectSandbox()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">
+      <div class="flex flex-wrap justify-between items-center gap-2">
+        <span class="text-[11px] text-slate-400 hidden sm:inline">Librerías listas: <code>sympy (sp)</code>, <code>numpy (np)</code>, <code>scipy</code>, <code>matplotlib.pyplot (plt)</code></span>
+        <button onclick="executeDirectSandbox()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">
           ▶️ Ejecutar Script y Graficar
         </button>
       </div>
 
-      <div id="directSandboxOutput" class="overflow-y-auto space-y-3 max-h-72 hidden border-t border-slate-800 pt-3"></div>
+      <div id="directSandboxOutput" class="overflow-y-auto space-y-3 max-h-64 hidden border-t border-slate-800 pt-3"></div>
     </div>
   </div>
 
   <!-- Interactive Classroom Slide Deck Modal ("Ver Explicación en Clase") -->
-  <div id="classroomModal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-3 md:p-6">
-    <div class="bg-slate-900 border border-sky-500/30 rounded-3xl max-w-6xl w-full h-[90vh] flex flex-col shadow-2xl shadow-sky-950/50 overflow-hidden">
+  <div id="classroomModal" class="hidden fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-0 sm:p-4 md:p-6">
+    <div class="bg-slate-900 border-0 sm:border sm:border-sky-500/30 rounded-none sm:rounded-3xl max-w-6xl w-full h-[100dvh] sm:h-[90dvh] flex flex-col shadow-2xl overflow-hidden">
 
       <!-- Modal Top Header -->
-      <div class="bg-slate-950/80 border-b border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-xl shadow-lg shadow-amber-500/20">
+      <div class="bg-slate-950/90 border-b border-slate-800 px-3.5 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-base sm:text-xl shadow-lg shadow-amber-500/20 shrink-0">
             🎓
           </div>
-          <div>
+          <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <h3 id="classroomCourseTitle" class="font-bold text-base md:text-lg text-white">Clase Magistral Interactiva</h3>
-              <span id="classroomModelBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-medium">
+              <h3 id="classroomCourseTitle" class="font-bold text-sm sm:text-base md:text-lg text-white truncate">Clase Magistral Interactiva</h3>
+              <span id="classroomModelBadge" class="hidden md:inline-block text-[11px] px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-medium shrink-0">
                 Modo Aula
               </span>
             </div>
-            <p id="classroomCourseSubtitle" class="text-xs text-slate-400">De la intuición paso a paso a la demostración visual</p>
+            <p id="classroomCourseSubtitle" class="text-[11px] sm:text-xs text-slate-400 truncate">De la intuición paso a paso a la demostración visual</p>
           </div>
         </div>
 
-        <button onclick="closeClassroomModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-600/80 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1.5">
-          <span>✕</span> Salir del Aula
+        <button onclick="closeClassroomModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-600/80 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1 shrink-0">
+          <span>✕</span>
+          <span class="hidden sm:inline">Salir del Aula</span>
         </button>
       </div>
 
       <!-- Progress Stepper Bar -->
-      <div id="classroomStepper" class="bg-slate-900/90 border-b border-slate-800/80 px-6 py-2.5 flex items-center gap-2 overflow-x-auto shrink-0">
+      <div id="classroomStepper" class="bg-slate-900/95 border-b border-slate-800/80 px-3.5 sm:px-6 py-2 flex items-center gap-1.5 sm:gap-2 overflow-x-auto shrink-0">
       </div>
 
       <!-- Main Slide Body -->
-      <div id="classroomSlideContainer" class="flex-1 overflow-y-auto p-6">
+      <div id="classroomSlideContainer" class="flex-1 overflow-y-auto p-3.5 sm:p-6">
         <!-- Populated dynamically by app.js -->
       </div>
 
       <!-- Footer Slide Navigation -->
-      <div class="bg-slate-950/90 border-t border-slate-800 px-6 py-3.5 flex items-center justify-between shrink-0">
+      <div class="bg-slate-950/95 border-t border-slate-800 px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 shrink-0">
         <button id="prevSlideBtn" onclick="changeClassroomSlide(-1)"
-          class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-semibold transition flex items-center gap-2">
-          <span>←</span> Diapositiva Anterior
+          class="px-3 sm:px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-semibold transition flex items-center gap-1.5">
+          <span>←</span>
+          <span class="hidden sm:inline">Diapositiva</span>
+          <span>Anterior</span>
         </button>
 
-        <div id="slideCounterText" class="text-xs font-mono text-slate-400">
-          Diapositiva 1 / 4
+        <div id="slideCounterText" class="text-xs font-mono text-slate-400 shrink-0">
+          1 / 4
         </div>
 
         <button id="nextSlideBtn" onclick="changeClassroomSlide(1)"
-          class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 disabled:opacity-40 text-white text-xs font-semibold shadow-lg shadow-amber-500/20 transition flex items-center gap-2">
-          <span>Siguiente Diapositiva</span> <span>→</span>
+          class="px-3.5 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 disabled:opacity-40 text-white text-xs font-semibold shadow-lg shadow-amber-500/20 transition flex items-center gap-1.5">
+          <span>Siguiente</span>
+          <span class="hidden sm:inline">Diapositiva</span>
+          <span>→</span>
         </button>
       </div>
     </div>
   </div>
 
-  <script src="/static/app.js?v=3"></script>
+  <script src="/static/app.js?v=4"></script>
 </body>
 </html>
