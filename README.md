@@ -1,14 +1,6 @@
----
-title: MiniMax Math & Physics AI Professor
-emoji: 🎓
-colorFrom: blue
-colorTo: indigo
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 # 🎓 Profesor IA de Matemáticas y Física (MiniMax + SymPy + Matplotlib)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://dashboard.render.com/blueprint/new?repo=https://github.com/faraday0594/math-physics-professor)
 
 Plataforma interactiva de resolución matemática y física paso a paso con motor científico en Python (`SymPy`, `NumPy`, `SciPy`, `Matplotlib`) y modo **Aula Interactiva por Diapositivas**.
 
