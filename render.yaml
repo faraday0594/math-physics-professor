@@ -11,8 +11,6 @@ services:
         value: 3.11.9
       - key: MPLCONFIGDIR
         value: /tmp/matplotlib
-      - key: MINIMAX_API_KEY
-        sync: false
       - key: MINIMAX_BASE_URL
         value: https://api.minimax.io/v1
       - key: MINIMAX_MODEL
