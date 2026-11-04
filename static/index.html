@@ -2,113 +2,45 @@
 <html lang="es" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Profesor MiniMax — Matemáticas y Física</title>
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Compiled Local Tailwind CSS (Zero CDN blocking!) -->
+  <link rel="stylesheet" href="/static/styles.css?v=6" />
 
-  <!-- KaTeX for Math Rendering (Cloudflare CDN for reliable mobile delivery) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <!-- KaTeX & Highlight CSS (non-blocking) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" media="print" onload="this.media='all'" />
 
-  <!-- Marked for Markdown (Cloudflare CDN) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
-
-  <!-- Highlight.js for Code Blocks -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #0b0f19;
-      color: #f1f5f9;
-      margin: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-    /* Critical fallback rules so mobile never shows broken MathML or hidden modals */
-    .hidden {
-      display: none !important;
-    }
-    .katex-mathml {
-      position: absolute !important;
-      clip: rect(1px, 1px, 1px, 1px) !important;
-      padding: 0 !important;
-      border: 0 !important;
-      height: 1px !important;
-      width: 1px !important;
-      overflow: hidden !important;
-    }
-    code, pre {
-      font-family: 'JetBrains Mono', monospace;
-    }
-    .prose-math {
-      overflow-wrap: break-word;
-      word-break: break-word;
-    }
-    .prose-math p {
-      margin-bottom: 0.85rem;
-      line-height: 1.7;
-    }
-    .prose-math h1, .prose-math h2, .prose-math h3 {
-      color: #38bdf8;
-      font-weight: 700;
-      margin-top: 1.15rem;
-      margin-bottom: 0.5rem;
-    }
-    .prose-math ul, .prose-math ol {
-      margin-left: 1.25rem;
-      margin-bottom: 0.85rem;
-      list-style-type: disc;
-    }
-    .prose-math li {
-      margin-bottom: 0.35rem;
-    }
-    .katex-display {
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      border-radius: 0.75rem;
-      padding: 0.75rem 0.85rem;
-      margin: 0.85rem 0 !important;
-      overflow-x: auto;
-      overflow-y: hidden;
-      max-width: 100%;
-    }
-    .katex {
-      font-size: 1.02em;
-    }
-    /* Custom scrollbar */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
-  </style>
+  <!-- Deferred JS Scripts (Never block mobile screen rendering!) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script defer src="/static/app.js?v=6"></script>
 </head>
-<body class="h-[100dvh] flex flex-col overflow-hidden">
+<body class="h-[100dvh] w-full flex flex-col overflow-hidden bg-[#0b0f19] text-slate-100 select-none sm:select-auto">
 
-  <!-- Header -->
-  <header class="bg-slate-900/95 border-b border-slate-800/90 px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 shrink-0">
+  <!-- App Header -->
+  <header class="bg-slate-900/95 border-b border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 shrink-0 z-20">
     <div class="flex items-center gap-2.5 min-w-0">
-      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 font-bold text-base sm:text-lg shrink-0">
+      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center shadow-md shadow-sky-500/20 font-bold text-base sm:text-lg text-white shrink-0">
         ∑
       </div>
       <div class="min-w-0">
         <div class="flex items-center gap-2">
-          <h1 class="font-bold text-base sm:text-lg tracking-tight text-white truncate">Profesor MiniMax</h1>
-          <span class="hidden sm:inline-block text-[11px] px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 font-medium shrink-0">
-            Matemáticas & Física
+          <h1 class="font-bold text-sm sm:text-lg tracking-tight text-white truncate">Profesor MiniMax</h1>
+          <span class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 font-medium shrink-0">
+            IA Científica
           </span>
         </div>
-        <p class="text-[11px] text-slate-400 truncate hidden sm:block">Tutor Multimodal (Texto • Foto • Audio) + Motor Científico SymPy & Matplotlib</p>
+        <p class="text-[11px] text-slate-400 truncate hidden sm:block">Matemáticas y Física paso a paso con SymPy + Matplotlib</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-      <!-- Quick model selector -->
-      <div class="hidden md:flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-1.5 text-xs">
+    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <!-- Desktop model selector -->
+      <div class="hidden md:flex items-center gap-2 bg-slate-800/90 border border-slate-700 rounded-xl px-3 py-1.5 text-xs">
         <span class="text-slate-400">Modelo:</span>
         <select id="modelSelect" class="bg-transparent text-sky-400 font-medium focus:outline-none cursor-pointer">
           <option value="MiniMax-M3.1-Flash" class="bg-slate-900 text-white">MiniMax-M3.1-Flash</option>
@@ -118,8 +50,8 @@
         </select>
       </div>
 
-      <!-- Thinking effort selector -->
-      <div class="hidden lg:flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-1.5 text-xs">
+      <!-- Desktop effort selector -->
+      <div class="hidden lg:flex items-center gap-2 bg-slate-800/90 border border-slate-700 rounded-xl px-3 py-1.5 text-xs">
         <span class="text-slate-400">Razonamiento:</span>
         <select id="effortSelect" class="bg-transparent text-emerald-400 font-medium focus:outline-none cursor-pointer">
           <option value="low" class="bg-slate-900 text-white">Rápido (low)</option>
@@ -128,78 +60,85 @@
         </select>
       </div>
 
-      <button onclick="toggleModal('sandboxModal')" class="text-xs px-2.5 sm:px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1.5 font-medium">
+      <button onclick="toggleModal('sandboxModal')" class="text-xs px-2.5 sm:px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1 font-semibold">
         <span>⚡</span>
         <span class="hidden sm:inline">Laboratorio Python</span>
-        <span class="sm:hidden">Lab</span>
+        <span class="sm:hidden">Python</span>
       </button>
 
-      <button onclick="toggleModal('settingsModal')" class="text-xs px-2.5 sm:px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+      <button onclick="toggleModal('settingsModal')" class="text-xs px-2.5 sm:px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1 font-medium">
         <span>⚙️</span>
         <span class="hidden sm:inline">Config</span>
       </button>
     </div>
   </header>
 
-  <!-- Main Chat Workspace (Full Width, No Left Sidebar) -->
-  <main class="flex-1 flex flex-col overflow-hidden bg-slate-950/60">
+  <!-- Main Chat Area -->
+  <main class="flex-1 flex flex-col overflow-hidden bg-slate-950">
 
-    <!-- Messages Container -->
-    <div id="chatContainer" class="flex-1 overflow-y-auto px-3 py-4 sm:p-6 space-y-4 sm:space-y-6">
-      <!-- Welcome Card -->
-      <div class="max-w-3xl mx-auto bg-slate-900/90 border border-slate-800/90 rounded-2xl p-4 sm:p-6 shadow-xl">
-        <div class="flex items-start gap-3 sm:gap-4">
-          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xl sm:text-2xl shrink-0">
+    <!-- Scrollable Messages Container -->
+    <div id="chatContainer" class="flex-1 overflow-y-auto px-3 py-3 sm:p-6 space-y-4 sm:space-y-6">
+      <!-- Welcome Hero Card -->
+      <div class="max-w-3xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xl sm:text-2xl shrink-0 shadow-md">
             👨‍🏫
           </div>
-          <div class="space-y-2.5 min-w-0 flex-1">
-            <h2 class="text-base sm:text-lg font-bold text-white leading-snug">
+          <div>
+            <h2 class="text-sm sm:text-lg font-bold text-white leading-tight">
               ¡Hola! Soy tu Profesor de Matemáticas y Física
             </h2>
-            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Escribe una ecuación, sube una foto de tu cuaderno o graba una nota de voz. Toca un tema para cargar un ejemplo:
+            <p class="text-xs text-slate-400 mt-0.5">
+              Escribe tu problema, sube una foto o toca un ejemplo para empezar:
             </p>
-
-            <!-- Compact Quick Examples Chips (Plain text labels, no duplicate math blocks) -->
-            <div class="flex flex-wrap gap-1.5 sm:gap-2 pt-1">
-              <button onclick="loadPreset('linear')" class="text-xs px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-sky-300 border border-slate-700/80 transition font-medium">
-                📐 Ecuación 2x - 1 = 5
-              </button>
-              <button onclick="loadPreset('integral')" class="text-xs px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-rose-300 border border-slate-700/80 transition font-medium">
-                ∫ Integral y Área
-              </button>
-              <button onclick="loadPreset('projectile')" class="text-xs px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-amber-300 border border-slate-700/80 transition font-medium">
-                🚀 Tiro Parabólico
-              </button>
-              <button onclick="loadPreset('calculus')" class="text-xs px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-purple-300 border border-slate-700/80 transition font-medium">
-                📈 Derivada y Máximos
-              </button>
-            </div>
           </div>
+        </div>
+
+        <!-- 2x2 Touch-Friendly Quick Examples Grid on Mobile -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+          <button onclick="loadPreset('linear')" class="text-left p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 active:scale-95 border border-slate-700/80 transition">
+            <div class="text-xs font-bold text-sky-400">📐 Ecuación</div>
+            <div class="text-[11px] text-slate-300 mt-0.5 truncate">Resolver 2x - 1 = 5</div>
+          </button>
+
+          <button onclick="loadPreset('integral')" class="text-left p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 active:scale-95 border border-slate-700/80 transition">
+            <div class="text-xs font-bold text-rose-400">∫ Integral</div>
+            <div class="text-[11px] text-slate-300 mt-0.5 truncate">Área bajo la curva</div>
+          </button>
+
+          <button onclick="loadPreset('projectile')" class="text-left p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 active:scale-95 border border-slate-700/80 transition">
+            <div class="text-xs font-bold text-amber-400">🚀 Física</div>
+            <div class="text-[11px] text-slate-300 mt-0.5 truncate">Tiro parabólico</div>
+          </button>
+
+          <button onclick="loadPreset('calculus')" class="text-left p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 active:scale-95 border border-slate-700/80 transition">
+            <div class="text-xs font-bold text-purple-400">📈 Derivadas</div>
+            <div class="text-[11px] text-slate-300 mt-0.5 truncate">Máximos y mínimos</div>
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Attachment Preview Bar -->
-    <div id="attachmentBar" class="hidden px-3.5 sm:px-6 py-2 bg-slate-900/95 border-t border-slate-800 flex items-center gap-3 flex-wrap">
+    <div id="attachmentBar" class="hidden px-3 sm:px-6 py-2 bg-slate-900 border-t border-slate-800 flex items-center gap-2 flex-wrap shrink-0">
       <!-- Image preview -->
       <div id="imagePreviewBadge" class="hidden flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1 text-xs">
         <img id="imagePreviewThumb" src="" class="w-7 h-7 object-cover rounded-lg border border-slate-600" />
-        <span id="imagePreviewName" class="text-slate-200 max-w-[140px] truncate">imagen.png</span>
-        <button onclick="clearImageAttachment()" class="text-slate-400 hover:text-rose-400 font-bold ml-1 p-1">✕</button>
+        <span id="imagePreviewName" class="text-slate-200 max-w-[130px] truncate">imagen.png</span>
+        <button onclick="clearImageAttachment()" class="text-slate-400 hover:text-rose-400 font-bold ml-1 px-1">✕</button>
       </div>
 
       <!-- Audio preview -->
       <div id="audioPreviewBadge" class="hidden flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1 text-xs">
         <span class="text-amber-400 text-sm">🎙️</span>
         <audio id="audioPreviewPlayer" controls class="h-7 w-36 sm:w-44"></audio>
-        <button onclick="clearAudioAttachment()" class="text-slate-400 hover:text-rose-400 font-bold ml-1 p-1">✕</button>
+        <button onclick="clearAudioAttachment()" class="text-slate-400 hover:text-rose-400 font-bold ml-1 px-1">✕</button>
       </div>
     </div>
 
-    <!-- Mobile-First Unified Input Composer -->
-    <div class="p-2.5 sm:p-4 bg-slate-900/95 border-t border-slate-800/90 shrink-0">
-      <div class="max-w-3xl mx-auto bg-slate-950 border border-slate-700/90 focus-within:border-sky-500/80 rounded-2xl p-2 sm:p-2.5 shadow-lg transition">
+    <!-- Bottom Input Dock -->
+    <div class="p-2.5 sm:p-4 bg-slate-900 border-t border-slate-800 shrink-0">
+      <div class="max-w-3xl mx-auto bg-slate-950 border border-slate-700 rounded-2xl p-2 sm:p-2.5 shadow-lg">
         <!-- Hidden File Inputs -->
         <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageSelected(event)" />
         <input type="file" id="audioFileInput" accept="audio/*" class="hidden" onchange="handleAudioFileSelected(event)" />
@@ -207,36 +146,32 @@
         <!-- Textarea Full Width -->
         <textarea id="promptInput" rows="2"
           placeholder="Escribe tu problema (ej: 2x - 1 = 5), sube foto o graba voz..."
-          class="w-full bg-transparent focus:outline-none px-2 py-1 text-base sm:text-sm text-white placeholder-slate-500 resize-none leading-relaxed"
+          class="w-full bg-transparent focus:outline-none px-2 py-1 text-base sm:text-sm text-white placeholder-slate-500 resize-none leading-snug select-text"
           onkeydown="if(event.key === 'Enter' && !event.shiftKey && window.innerWidth > 640) { event.preventDefault(); sendProblem(); }"></textarea>
 
-        <!-- Bottom Action Toolbar inside Composer -->
-        <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-800/80 mt-1">
+        <!-- Bottom Action Toolbar -->
+        <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-800/90 mt-1">
           <div class="flex items-center gap-1.5">
-            <!-- Upload Image Button -->
-            <button onclick="document.getElementById('imageInput').click()" title="Subir o tomar foto del problema"
-              class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5 text-xs font-medium">
+            <button type="button" onclick="document.getElementById('imageInput').click()"
+              class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 transition flex items-center gap-1 text-xs font-medium">
               <span>📷</span>
               <span>Foto</span>
             </button>
 
-            <!-- Record Microphone Button -->
-            <button id="micButton" onclick="toggleRecording()" title="Grabar pregunta con micrófono"
-              class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5 text-xs font-medium">
+            <button type="button" id="micButton" onclick="toggleRecording()"
+              class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 transition flex items-center gap-1 text-xs font-medium">
               <span id="micIcon">🎙️</span>
               <span>Voz</span>
               <span id="micTimer" class="hidden text-xs font-mono text-rose-400 font-semibold">00:00</span>
             </button>
 
-            <!-- Upload Audio File Button -->
-            <button onclick="document.getElementById('audioFileInput').click()" title="Subir archivo de audio"
-              class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/80 transition flex items-center gap-1 text-xs font-medium">
+            <button type="button" onclick="document.getElementById('audioFileInput').click()"
+              class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700 transition flex items-center gap-1 text-xs font-medium">
               <span>🎵</span>
             </button>
           </div>
 
-          <!-- Send Button -->
-          <button id="sendBtn" onclick="sendProblem()"
+          <button type="button" id="sendBtn" onclick="sendProblem()"
             class="px-4 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 active:scale-95 text-white font-semibold text-xs sm:text-sm shadow-md shadow-sky-500/20 transition flex items-center gap-1.5">
             <span>Resolver</span>
             <span>➔</span>
@@ -247,17 +182,17 @@
   </main>
 
   <!-- Settings Modal -->
-  <div id="settingsModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div id="settingsModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="font-bold text-base text-white">⚙️ Configuración del Profesor</h3>
-        <button onclick="toggleModal('settingsModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+        <button onclick="toggleModal('settingsModal')" class="text-slate-400 hover:text-white px-2 py-1">✕</button>
       </div>
       <form id="settingsForm" onsubmit="event.preventDefault(); saveAndCloseSettings();" class="space-y-3 text-xs">
         <div>
           <label class="block text-slate-300 font-medium mb-1">API Key de MiniMax</label>
           <input id="customApiKey" type="password" placeholder="sk-cp-..." autocomplete="current-password"
-            class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-white font-mono focus:border-sky-500 focus:outline-none text-sm" />
+            class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2.5 text-white font-mono focus:border-sky-500 focus:outline-none text-sm select-text" />
           <p id="currentKeyStatus" class="text-[11px] text-slate-400 mt-1">Cargando estado de clave en servidor...</p>
         </div>
         <div>
@@ -280,18 +215,18 @@
   </div>
 
   <!-- Direct Python Sandbox Modal -->
-  <div id="sandboxModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+  <div id="sandboxModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full p-4 sm:p-6 space-y-3 sm:space-y-4 shadow-2xl max-h-[92dvh] flex flex-col">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
           <h3 class="font-bold text-sm sm:text-base text-white">⚡ Laboratorio Científico Python</h3>
           <p class="text-[11px] sm:text-xs text-slate-400">Ejecuta scripts con SymPy, NumPy y Matplotlib directamente.</p>
         </div>
-        <button onclick="toggleModal('sandboxModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+        <button onclick="toggleModal('sandboxModal')" class="text-slate-400 hover:text-white px-2 py-1">✕</button>
       </div>
 
       <textarea id="directSandboxCode" rows="8"
-        class="w-full rounded-xl bg-slate-950 border border-slate-700 p-3 font-mono text-xs text-emerald-300 focus:outline-none focus:border-emerald-500">import sympy as sp
+        class="w-full rounded-xl bg-slate-950 border border-slate-700 p-3 font-mono text-xs text-emerald-300 focus:outline-none focus:border-emerald-500 select-text">import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -327,14 +262,14 @@ plt.grid(True, alpha=0.3)</textarea>
     </div>
   </div>
 
-  <!-- Interactive Classroom Slide Deck Modal ("Ver Explicación en Clase") -->
-  <div id="classroomModal" class="hidden fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-0 sm:p-4 md:p-6">
+  <!-- Interactive Classroom Slide Deck Modal -->
+  <div id="classroomModal" class="hidden fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-0 sm:p-4 md:p-6">
     <div class="bg-slate-900 border-0 sm:border sm:border-sky-500/30 rounded-none sm:rounded-3xl max-w-6xl w-full h-[100dvh] sm:h-[90dvh] flex flex-col shadow-2xl overflow-hidden">
 
       <!-- Modal Top Header -->
-      <div class="bg-slate-950/90 border-b border-slate-800 px-3.5 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 shrink-0">
+      <div class="bg-slate-950 border-b border-slate-800 px-3.5 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 shrink-0">
         <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-base sm:text-xl shadow-lg shadow-amber-500/20 shrink-0">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-base sm:text-xl shadow-lg shrink-0">
             🎓
           </div>
           <div class="min-w-0">
@@ -348,23 +283,22 @@ plt.grid(True, alpha=0.3)</textarea>
           </div>
         </div>
 
-        <button onclick="closeClassroomModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-600/80 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1 shrink-0">
+        <button onclick="closeClassroomModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white text-xs font-semibold transition flex items-center gap-1 shrink-0">
           <span>✕</span>
           <span class="hidden sm:inline">Salir del Aula</span>
         </button>
       </div>
 
       <!-- Progress Stepper Bar -->
-      <div id="classroomStepper" class="bg-slate-900/95 border-b border-slate-800/80 px-3.5 sm:px-6 py-2 flex items-center gap-1.5 sm:gap-2 overflow-x-auto shrink-0">
+      <div id="classroomStepper" class="bg-slate-900 border-b border-slate-800 px-3.5 sm:px-6 py-2 flex items-center gap-1.5 sm:gap-2 overflow-x-auto shrink-0">
       </div>
 
       <!-- Main Slide Body -->
-      <div id="classroomSlideContainer" class="flex-1 overflow-y-auto p-3.5 sm:p-6">
-        <!-- Populated dynamically by app.js -->
+      <div id="classroomSlideContainer" class="flex-1 overflow-y-auto p-3.5 sm:p-6 select-text">
       </div>
 
       <!-- Footer Slide Navigation -->
-      <div class="bg-slate-950/95 border-t border-slate-800 px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 shrink-0">
+      <div class="bg-slate-950 border-t border-slate-800 px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 shrink-0">
         <button id="prevSlideBtn" onclick="changeClassroomSlide(-1)"
           class="px-3 sm:px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-semibold transition flex items-center gap-1.5">
           <span>←</span>
@@ -377,7 +311,7 @@ plt.grid(True, alpha=0.3)</textarea>
         </div>
 
         <button id="nextSlideBtn" onclick="changeClassroomSlide(1)"
-          class="px-3.5 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 disabled:opacity-40 text-white text-xs font-semibold shadow-lg shadow-amber-500/20 transition flex items-center gap-1.5">
+          class="px-3.5 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 disabled:opacity-40 text-white text-xs font-semibold shadow-md transition flex items-center gap-1.5">
           <span>Siguiente</span>
           <span class="hidden sm:inline">Diapositiva</span>
           <span>→</span>
@@ -386,6 +320,5 @@ plt.grid(True, alpha=0.3)</textarea>
     </div>
   </div>
 
-  <script src="/static/app.js?v=5"></script>
 </body>
 </html>

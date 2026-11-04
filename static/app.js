@@ -39,13 +39,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   fetchConfigStatus();
-  renderMathInElement(document.body, {
-    delimiters: [
-      { left: "$$", right: "$$", display: true },
-      { left: "$", right: "$", display: false },
-    ],
-    throwOnError: false,
-  });
+  if (typeof renderMathInElement === "function") {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+      ],
+      throwOnError: false,
+    });
+  }
 
   // Support Ctrl+V image pasting anywhere
   window.addEventListener("paste", (e) => {
@@ -252,7 +254,7 @@ function renderMarkdownWithMath(rawMarkdown) {
     return `@@MATH_BLOCK_${mathBlocks.length - 1}@@`;
   });
 
-  let html = marked.parse(protectedText);
+  let html = typeof marked !== "undefined" ? marked.parse(protectedText) : protectedText.replace(/\n/g, "<br/>");
 
   html = html.replace(/@@MATH_BLOCK_(\d+)@@/g, (_, idx) => mathBlocks[Number(idx)]);
   return html;
@@ -423,19 +425,23 @@ function appendTeacherResponse(data) {
   container.appendChild(wrapper);
 
   // Render KaTeX equations and highlight code blocks
-  renderMathInElement(wrapper, {
-    delimiters: [
-      { left: "$$", right: "$$", display: true },
-      { left: "$", right: "$", display: false },
-      { left: "\\[", right: "\\]", display: true },
-      { left: "\\(", right: "\\)", display: false },
-    ],
-    throwOnError: false,
-  });
+  if (typeof renderMathInElement === "function") {
+    renderMathInElement(wrapper, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+        { left: "\\[", right: "\\]", display: true },
+        { left: "\\(", right: "\\)", display: false },
+      ],
+      throwOnError: false,
+    });
+  }
 
-  wrapper.querySelectorAll("pre code").forEach((block) => {
-    hljs.highlightElement(block);
-  });
+  if (typeof hljs !== "undefined") {
+    wrapper.querySelectorAll("pre code").forEach((block) => {
+      hljs.highlightElement(block);
+    });
+  }
 
   container.scrollTop = container.scrollHeight;
 }
@@ -923,15 +929,17 @@ function renderCurrentClassroomSlide() {
 
   container.scrollTop = 0;
 
-  renderMathInElement(container, {
-    delimiters: [
-      { left: "$$", right: "$$", display: true },
-      { left: "$", right: "$", display: false },
-      { left: "\\[", right: "\\]", display: true },
-      { left: "\\(", right: "\\)", display: false },
-    ],
-    throwOnError: false,
-  });
+  if (typeof renderMathInElement === "function") {
+    renderMathInElement(container, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+        { left: "\\[", right: "\\]", display: true },
+        { left: "\\(", right: "\\)", display: false },
+      ],
+      throwOnError: false,
+    });
+  }
 
   // Update footer navigation buttons
   document.getElementById("slideCounterText").textContent = `${activeSlideIndex + 1} / ${slides.length}`;
