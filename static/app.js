@@ -1246,12 +1246,23 @@ async function openAcademyDayLesson(dayNumber) {
         model: document.getElementById("modelSelect") ? document.getElementById("modelSelect").value : "MiniMax-M3.1-Flash",
         api_key: document.getElementById("customApiKey") ? document.getElementById("customApiKey").value : "",
         base_url: document.getElementById("customBaseUrl") ? document.getElementById("customBaseUrl").value : "",
-        generate_ai_image: true,
+        generate_ai_image: false,
       }),
     });
-    const lesson = await res.json();
+    const rawText = await res.text();
+    if (!res.ok || !rawText) {
+      throw new Error(`El servidor respondió con estado ${res.status}. Por favor intenta de nuevo.`);
+    }
+    const lesson = JSON.parse(rawText);
     cachedAcademyLessons[dayNumber] = lesson;
     renderAcademyDayLesson(lesson);
+
+    // Trigger MiniMax image-01 asynchronously in background without blocking the lesson!
+    setTimeout(() => {
+      if (currentAcademyDay === dayNumber) {
+        regenerateConceptImage(dayNumber);
+      }
+    }, 150);
   } catch (err) {
     contentEl.innerHTML = `
       <div class="bg-rose-950/40 border border-rose-500/40 rounded-2xl p-6 text-xs text-rose-200 space-y-3">
@@ -1439,13 +1450,21 @@ function renderAcademyDayLesson(lesson) {
 
       <!-- Detailed Explanation + Mental Tips -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
-        <div class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
-          <span>📖</span>
-          <span>1. Explicación Detallada y Conceptos Clave</span>
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+            <span>📖</span>
+            <span>1. Explicación Detallada y Conceptos Clave</span>
+          </div>
+          <button id="deepDiveBtn" onclick="loadLiveDeepDive(${day})"
+            class="text-xs px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 font-semibold transition flex items-center gap-1.5">
+            <span>✨</span>
+            <span>Ampliar Clase en Vivo con MiniMax IA</span>
+          </button>
         </div>
         <div class="prose-math text-xs sm:text-sm text-slate-200 leading-relaxed">
           ${renderMarkdownWithMath(lesson.detailed_explanation || "")}
         </div>
+        <div id="liveDeepDiveContainer" class="hidden p-4 rounded-2xl bg-slate-950 border border-sky-500/40 space-y-2"></div>
 
         <div class="space-y-2.5 pt-2">
           <div class="text-xs font-bold uppercase tracking-wider text-amber-400">
@@ -1646,6 +1665,57 @@ function practiceExerciseInBoard(promptText) {
     sendProblem();
   }
 }
+
+async function loadLiveDeepDive(dayNumber) {
+  const btn = document.getElementById("deepDiveBtn");
+  const box = document.getElementById("liveDeepDiveContainer");
+  if (!box) return;
+
+  box.classList.remove("hidden");
+  box.innerHTML = `<div class="text-xs text-sky-300 animate-pulse">🧠 El Profesor MiniMax está redactando una cátedra avanzada en vivo para el Día ${dayNumber}...</div>`;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳ Generando con MiniMax...";
+  }
+
+  try {
+    const res = await fetch("/api/academy/deep-dive", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        day: dayNumber,
+        model: document.getElementById("modelSelect") ? document.getElementById("modelSelect").value : "MiniMax-M3.1-Flash",
+        api_key: document.getElementById("customApiKey") ? document.getElementById("customApiKey").value : "",
+        base_url: document.getElementById("customBaseUrl") ? document.getElementById("customBaseUrl").value : "",
+      }),
+    });
+    const data = await res.json();
+    box.innerHTML = `
+      <div class="text-xs font-bold uppercase tracking-wider text-sky-400 mb-2">✨ Cápsula Magistral en Vivo (${escapeHtml(data.model_used || "MiniMax")})</div>
+      <div class="prose-math text-xs sm:text-sm text-slate-200 leading-relaxed">${renderMarkdownWithMath(data.content_markdown || "")}</div>
+    `;
+    if (typeof renderMathInElement === "function") {
+      renderMathInElement(box, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\[", right: "\\]", display: true },
+          { left: "\\(", right: "\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+  } catch (e) {
+    box.innerHTML = `<div class="text-xs text-rose-400">No se pudo cargar la ampliación en vivo: ${escapeHtml(e.message)}</div>`;
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<span>✨</span><span>Ampliar Clase en Vivo con MiniMax IA</span>`;
+    }
+  }
+}
+
+window.loadLiveDeepDive = loadLiveDeepDive;
 
 window.openAcademyModal = openAcademyModal;
 window.closeAcademyModal = closeAcademyModal;
