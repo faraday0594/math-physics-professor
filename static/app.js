@@ -954,3 +954,707 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
+
+// ============================================================================
+// ACADEMY COURSE: 30-DAY CALENDAR & AI MASTERCLASS ENGINE
+// ============================================================================
+let academyCurriculumData = null;
+let activeModuleFilter = 0; // 0 = all modules
+let cachedAcademyLessons = {};
+let currentAcademyDay = 1;
+
+function getCompletedDays() {
+  try {
+    const raw = localStorage.getItem("minimax_academy_completed_days");
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveCompletedDays(daysArr) {
+  localStorage.setItem("minimax_academy_completed_days", JSON.stringify(daysArr));
+}
+
+function toggleDayComplete(dayNumber) {
+  const completed = getCompletedDays();
+  const idx = completed.indexOf(dayNumber);
+  if (idx === -1) {
+    completed.push(dayNumber);
+  } else {
+    completed.splice(idx, 1);
+  }
+  saveCompletedDays(completed);
+  updateAcademyProgressUI();
+
+  const btn = document.getElementById("markDayCompleteBtn");
+  if (btn) {
+    const isDone = completed.includes(dayNumber);
+    btn.className = isDone
+      ? "px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-md transition flex items-center gap-1.5"
+      : "px-4 py-2 rounded-xl bg-slate-800 hover:bg-emerald-600/80 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition flex items-center gap-1.5";
+    btn.innerHTML = isDone ? `<span>✓</span><span>Día ${dayNumber} Completado</span>` : `<span>○</span><span>Marcar Día ${dayNumber} como Completado</span>`;
+  }
+}
+
+async function openAcademyModal() {
+  const modal = document.getElementById("academyModal");
+  modal.classList.remove("hidden");
+  showAcademyCalendarView();
+
+  if (!academyCurriculumData) {
+    try {
+      const res = await fetch("/api/academy/curriculum");
+      academyCurriculumData = await res.json();
+    } catch (e) {
+      console.error("Error loading curriculum:", e);
+      return;
+    }
+  }
+  renderAcademyCalendar(activeModuleFilter);
+}
+
+function closeAcademyModal() {
+  document.getElementById("academyModal").classList.add("hidden");
+}
+
+function showAcademyCalendarView() {
+  document.getElementById("academyCalendarView").classList.remove("hidden");
+  document.getElementById("academyLessonView").classList.add("hidden");
+  document.getElementById("backToCalendarBtn").classList.add("hidden");
+  document.getElementById("academyHeaderTitle").textContent = "Academia de Ingeniería: Calendario de 30 Días";
+  document.getElementById("academyHeaderSubtitle").textContent =
+    "De cero absoluto en matemáticas hasta ecuaciones diferenciales y control en ingeniería";
+  if (academyCurriculumData) {
+    renderAcademyCalendar(activeModuleFilter);
+  }
+}
+
+function updateAcademyProgressUI() {
+  if (!academyCurriculumData) return;
+  const completed = getCompletedDays();
+  const total = academyCurriculumData.total_days || 30;
+  const count = completed.length;
+  const pct = Math.min(100, Math.round((count / total) * 100));
+
+  const badge = document.getElementById("academyProgressBadge");
+  if (badge) badge.textContent = `${count} / ${total} Completados (${pct}%)`;
+
+  const mobText = document.getElementById("mobileProgressText");
+  if (mobText) mobText.textContent = `${count} / ${total} días (${pct}%)`;
+
+  const bar = document.getElementById("academyProgressBar");
+  if (bar) bar.style.width = `${pct}%`;
+
+  // Find next unfinished day
+  let nextDayObj = null;
+  for (const mod of academyCurriculumData.modules) {
+    for (const d of mod.days) {
+      if (!completed.includes(d.day)) {
+        nextDayObj = d;
+        break;
+      }
+    }
+    if (nextDayObj) break;
+  }
+  if (!nextDayObj && academyCurriculumData.modules.length > 0) {
+    nextDayObj = academyCurriculumData.modules[0].days[0];
+  }
+
+  if (nextDayObj) {
+    const titleEl = document.getElementById("nextRecommendedTitle");
+    if (titleEl) {
+      titleEl.textContent = `Día ${nextDayObj.day}: ${nextDayObj.title}`;
+    }
+    const btnText = document.getElementById("startNextDayBtnText");
+    if (btnText) {
+      btnText.textContent = `Iniciar Clase del Día ${nextDayObj.day}`;
+    }
+  }
+}
+
+function openNextUnfinishedDay() {
+  if (!academyCurriculumData) return;
+  const completed = getCompletedDays();
+  for (const mod of academyCurriculumData.modules) {
+    for (const d of mod.days) {
+      if (!completed.includes(d.day)) {
+        openAcademyDayLesson(d.day);
+        return;
+      }
+    }
+  }
+  openAcademyDayLesson(1);
+}
+
+function renderAcademyCalendar(filterModId = 0) {
+  activeModuleFilter = filterModId;
+  if (!academyCurriculumData) return;
+
+  updateAcademyProgressUI();
+  const completed = getCompletedDays();
+
+  // Render filter tabs
+  const filterBar = document.getElementById("moduleFilterBar");
+  const allActive = filterModId === 0;
+  let tabsHtml = `
+    <button onclick="renderAcademyCalendar(0)"
+      class="px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 transition ${
+        allActive
+          ? "bg-amber-500 text-slate-950 shadow-md"
+          : "bg-slate-900 text-slate-300 border border-slate-800 hover:bg-slate-800"
+      }">
+      🗓️ Todas las Fases (30 Días)
+    </button>
+  `;
+  for (const mod of academyCurriculumData.modules) {
+    const isAct = filterModId === mod.module_id;
+    tabsHtml += `
+      <button onclick="renderAcademyCalendar(${mod.module_id})"
+        class="px-3.5 py-2 rounded-xl text-xs font-semibold shrink-0 transition ${
+          isAct
+            ? "bg-sky-500 text-slate-950 font-bold shadow-md"
+            : "bg-slate-900 text-slate-300 border border-slate-800 hover:bg-slate-800"
+        }">
+        Fase ${mod.module_id}: ${escapeHtml(mod.module_badge.split("•")[1] || mod.module_badge)}
+      </button>
+    `;
+  }
+  filterBar.innerHTML = tabsHtml;
+
+  // Render module sections and day cards
+  const container = document.getElementById("curriculumModulesContainer");
+  const modulesToRender =
+    filterModId === 0
+      ? academyCurriculumData.modules
+      : academyCurriculumData.modules.filter((m) => m.module_id === filterModId);
+
+  container.innerHTML = modulesToRender
+    .map((mod) => {
+      const daysCards = mod.days
+        .map((d) => {
+          const isDone = completed.includes(d.day);
+          const statusBadge = isDone
+            ? `<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">✓ Completado</span>`
+            : `<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-medium">Pendiente</span>`;
+
+          return `
+            <div onclick="openAcademyDayLesson(${d.day})"
+              class="cursor-pointer group bg-slate-900 hover:bg-slate-800/90 border ${
+                isDone ? "border-emerald-500/40" : "border-slate-800 hover:border-amber-500/50"
+              } rounded-2xl p-4 sm:p-5 transition flex flex-col justify-between gap-3 shadow-lg">
+              <div class="space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-bold">
+                    Día ${d.day}
+                  </span>
+                  ${statusBadge}
+                </div>
+
+                <h4 class="font-bold text-sm sm:text-base text-white group-hover:text-amber-300 transition leading-snug">
+                  ${escapeHtml(d.title)}
+                </h4>
+
+                <p class="text-xs text-slate-400 leading-relaxed">
+                  ${escapeHtml(d.subtitle)}
+                </p>
+
+                <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 text-xs text-sky-300 overflow-x-auto">
+                  $$${d.formula_preview}$$
+                </div>
+              </div>
+
+              <div class="space-y-2.5 pt-2 border-t border-slate-800/80">
+                <div class="text-[11px] text-slate-400">
+                  <strong class="text-emerald-400">⚙️ Ingeniería:</strong> ${escapeHtml(d.engineering_link)}
+                </div>
+
+                <div class="w-full py-2 px-3 rounded-xl bg-slate-800 group-hover:bg-gradient-to-r group-hover:from-amber-500 group-hover:to-orange-600 text-slate-200 group-hover:text-white text-xs font-bold text-center transition flex items-center justify-center gap-1.5">
+                  <span>🎓 Entrar a la Clase del Día ${d.day}</span>
+                  <span>➔</span>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+
+      return `
+        <div class="space-y-3.5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-800 pb-2.5">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">${escapeHtml(mod.module_badge)}</span>
+              <h3 class="text-base sm:text-lg font-bold text-white">${escapeHtml(mod.module_title)}</h3>
+            </div>
+            <p class="text-xs text-slate-400 max-w-xl">${escapeHtml(mod.description)}</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+            ${daysCards}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  if (typeof renderMathInElement === "function") {
+    renderMathInElement(container, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+      ],
+      throwOnError: false,
+    });
+  }
+}
+
+async function openAcademyDayLesson(dayNumber) {
+  currentAcademyDay = dayNumber;
+  document.getElementById("academyCalendarView").classList.add("hidden");
+  const lessonView = document.getElementById("academyLessonView");
+  const contentEl = document.getElementById("academyLessonContent");
+  lessonView.classList.remove("hidden");
+  document.getElementById("backToCalendarBtn").classList.remove("hidden");
+
+  document.getElementById("academyHeaderTitle").textContent = `Clase Magistral — Día ${dayNumber} de 30`;
+  lessonView.scrollTop = 0;
+
+  if (cachedAcademyLessons[dayNumber]) {
+    renderAcademyDayLesson(cachedAcademyLessons[dayNumber]);
+    return;
+  }
+
+  contentEl.innerHTML = `
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 sm:p-12 text-center space-y-4 my-6 shadow-xl">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-600/20 border border-amber-500/40 flex items-center justify-center text-3xl animate-pulse">
+        🧠
+      </div>
+      <h3 class="text-base sm:text-xl font-bold text-white">
+        El Profesor MiniMax está preparando tu Clase del Día ${dayNumber}...
+      </h3>
+      <p class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
+        Redactando la explicación con tips mentales, construyendo la <strong>demostración matemática paso a paso</strong>, ejecutando el script científico en <strong>SymPy + Matplotlib</strong> y generando la ilustración conceptual con <strong>MiniMax Image-01</strong>.
+      </p>
+    </div>
+  `;
+
+  try {
+    const res = await fetch("/api/academy/lesson", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        day: dayNumber,
+        model: document.getElementById("modelSelect") ? document.getElementById("modelSelect").value : "MiniMax-M3.1-Flash",
+        api_key: document.getElementById("customApiKey") ? document.getElementById("customApiKey").value : "",
+        base_url: document.getElementById("customBaseUrl") ? document.getElementById("customBaseUrl").value : "",
+        generate_ai_image: true,
+      }),
+    });
+    const lesson = await res.json();
+    cachedAcademyLessons[dayNumber] = lesson;
+    renderAcademyDayLesson(lesson);
+  } catch (err) {
+    contentEl.innerHTML = `
+      <div class="bg-rose-950/40 border border-rose-500/40 rounded-2xl p-6 text-xs text-rose-200 space-y-3">
+        <div class="font-bold text-sm">Error al cargar la clase del Día ${dayNumber}</div>
+        <p>${escapeHtml(err.message)}</p>
+        <button onclick="openAcademyDayLesson(${dayNumber})" class="px-4 py-2 rounded-xl bg-sky-600 text-white font-semibold">Reintentar</button>
+      </div>
+    `;
+  }
+}
+
+function renderAcademyDayLesson(lesson) {
+  const contentEl = document.getElementById("academyLessonContent");
+  const day = lesson.day || currentAcademyDay;
+  const completed = getCompletedDays();
+  const isDone = completed.includes(day);
+
+  document.getElementById("academyHeaderTitle").textContent = `Día ${day}: ${lesson.title || ""}`;
+  document.getElementById("academyHeaderSubtitle").textContent = lesson.module_title || "";
+
+  // 1. Mental Tips Cards
+  const tipsHtml = (lesson.mental_tips || [])
+    .map(
+      (tip, i) => `
+      <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5">
+        <span class="text-amber-400 font-bold text-sm shrink-0">💡 Tip ${i + 1}:</span>
+        <span class="text-xs sm:text-sm text-amber-100 leading-relaxed">${renderMarkdownWithMath(tip)}</span>
+      </div>
+    `
+    )
+    .join("");
+
+  // 2. Mathematical Proof ("¿De dónde sale la fórmula?")
+  const proof = lesson.mathematical_proof || {};
+  const proofHtml = `
+    <div class="bg-slate-900 border-2 border-indigo-500/40 rounded-2xl p-4 sm:p-6 shadow-xl space-y-3">
+      <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-400">
+        <span>🏛️</span>
+        <span>Demostración Matemática (Para que tu cerebro entienda el origen)</span>
+      </div>
+      <h3 class="text-base sm:text-lg font-bold text-white">${renderMarkdownWithMath(proof.title || "¿De dónde sale esta fórmula?")}</h3>
+      ${
+        proof.intuition
+          ? `<div class="p-3 rounded-xl bg-indigo-950/50 border border-indigo-500/30 text-xs sm:text-sm text-indigo-200">
+               <strong>Intuición clave:</strong> ${escapeHtml(proof.intuition)}
+             </div>`
+          : ""
+      }
+      <div class="prose-math text-xs sm:text-sm text-slate-200 leading-relaxed bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+        ${renderMarkdownWithMath(proof.steps_markdown || "")}
+      </div>
+    </div>
+  `;
+
+  // 3. Dual Visual Lab: Matplotlib Scientific Plot + MiniMax Image-01 Concept Illustration
+  const plots = lesson.plots || [];
+  const plotImgHtml =
+    plots.length > 0
+      ? plots
+          .map(
+            (b64) => `
+          <div class="bg-white rounded-xl p-2 shadow-md border border-slate-700">
+            <img src="${b64}" class="w-full max-h-[360px] object-contain mx-auto rounded-lg" />
+          </div>
+        `
+          )
+          .join("")
+      : `<div class="text-xs text-slate-400 p-4">Sin gráfica adicional.</div>`;
+
+  const conceptImgUrl = lesson.concept_image || "";
+  const conceptImgSource = lesson.concept_image_source || "MiniMax image-01";
+  const defaultImgPrompt =
+    lesson.image_prompt ||
+    `Educational 3D scientific diagram of ${lesson.title}, glowing geometric labels, dark slate background`;
+
+  // 4. Worked Examples
+  const examplesHtml = (lesson.worked_examples || [])
+    .map(
+      (ex, i) => `
+      <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-2.5">
+        <div class="text-xs font-bold uppercase tracking-wider text-sky-400">
+          📘 ${escapeHtml(ex.title || `Ejemplo Resuelto ${i + 1}`)}
+        </div>
+        <div class="text-xs sm:text-sm font-semibold text-white bg-slate-900 p-3 rounded-xl border border-slate-800">
+          ${renderMarkdownWithMath(ex.problem || "")}
+        </div>
+        <div class="prose-math text-xs sm:text-sm text-slate-300 leading-relaxed pt-1">
+          ${renderMarkdownWithMath(ex.step_by_step || "")}
+        </div>
+        ${
+          ex.final_result
+            ? `<div class="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs sm:text-sm text-emerald-300 font-semibold">
+                 ✓ Resultado: ${renderMarkdownWithMath(ex.final_result)}
+               </div>`
+            : ""
+        }
+      </div>
+    `
+    )
+    .join("");
+
+  // 5. Common Mistakes
+  const mistakesHtml = (lesson.common_mistakes || [])
+    .map(
+      (m) => `
+      <li class="text-xs sm:text-sm text-rose-200 leading-relaxed">${renderMarkdownWithMath(m)}</li>
+    `
+    )
+    .join("");
+
+  // 6. Graduated Exercises (with Hint, Step-by-Step Solution, and "Practice on Board" button)
+  const exercisesHtml = (lesson.exercises || [])
+    .map((ex, i) => {
+      const safePractice = escapeHtml(ex.practice_prompt || ex.question || "");
+      return `
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <span class="px-2.5 py-1 rounded-lg bg-purple-500/15 text-purple-300 border border-purple-500/30 text-xs font-bold">
+              🏋️ ${escapeHtml(ex.level || `Ejercicio ${i + 1}`)}
+            </span>
+            <button onclick="practiceExerciseInBoard('${safePractice.replace(/'/g, "\\'")}')"
+              class="text-xs px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 font-semibold transition">
+              🧑‍🏫 Resolver en el Pizarrón con IA
+            </button>
+          </div>
+
+          <div class="prose-math text-xs sm:text-sm text-white font-medium leading-relaxed">
+            ${renderMarkdownWithMath(ex.question || "")}
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            <details class="bg-slate-900 border border-amber-500/30 rounded-xl p-3 text-xs">
+              <summary class="cursor-pointer font-semibold text-amber-300 select-none">💡 Ver Pista (Hint)</summary>
+              <div class="mt-2 pt-2 border-t border-slate-800 text-slate-300 leading-relaxed">
+                ${renderMarkdownWithMath(ex.hint || "")}
+              </div>
+            </details>
+
+            <details class="bg-slate-900 border border-emerald-500/30 rounded-xl p-3 text-xs">
+              <summary class="cursor-pointer font-semibold text-emerald-300 select-none">✅ Ver Solución Paso a Paso</summary>
+              <div class="mt-2 pt-2 border-t border-slate-800 text-slate-200 leading-relaxed">
+                ${renderMarkdownWithMath(ex.solution || "")}
+              </div>
+            </details>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  contentEl.innerHTML = `
+    <div class="space-y-6">
+      <!-- Top Lesson Banner -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold">
+              Día ${day} de 30
+            </span>
+            <span class="text-xs text-slate-400">• ⏱️ ${escapeHtml(lesson.estimated_time || "25 min")}</span>
+            <span class="text-xs text-sky-400">• ${escapeHtml(lesson.model_used || "MiniMax")}</span>
+          </div>
+
+          <button id="markDayCompleteBtn" onclick="toggleDayComplete(${day})"
+            class="${
+              isDone
+                ? "px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-md transition flex items-center gap-1.5"
+                : "px-4 py-2 rounded-xl bg-slate-800 hover:bg-emerald-600/80 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition flex items-center gap-1.5"
+            }">
+            <span>${isDone ? "✓" : "○"}</span>
+            <span>${isDone ? `Día ${day} Completado` : `Marcar Día ${day} como Completado`}</span>
+          </button>
+        </div>
+
+        <div>
+          <h1 class="text-lg sm:text-2xl font-bold text-white leading-snug">${escapeHtml(lesson.title || "")}</h1>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">${escapeHtml(lesson.subtitle || "")}</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-sky-950/40 border border-sky-500/30 text-xs sm:text-sm text-sky-100 leading-relaxed">
+          <strong class="text-sky-400 block text-xs uppercase tracking-wider mb-1">⚙️ ¿Por qué es vital en Ingeniería y Ciencias?</strong>
+          ${renderMarkdownWithMath(lesson.why_it_matters || "")}
+        </div>
+      </div>
+
+      <!-- Detailed Explanation + Mental Tips -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+        <div class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+          <span>📖</span>
+          <span>1. Explicación Detallada y Conceptos Clave</span>
+        </div>
+        <div class="prose-math text-xs sm:text-sm text-slate-200 leading-relaxed">
+          ${renderMarkdownWithMath(lesson.detailed_explanation || "")}
+        </div>
+
+        <div class="space-y-2.5 pt-2">
+          <div class="text-xs font-bold uppercase tracking-wider text-amber-400">
+            🧠 Tips Mentales y Trucos de Experto para Recordar Siempre
+          </div>
+          ${tipsHtml}
+        </div>
+      </div>
+
+      <!-- Mathematical Proof Section -->
+      ${proofHtml}
+
+      <!-- Dual Visual Lab: Matplotlib Scientific Graph + MiniMax image-01 AI Illustration -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <!-- Left: Exact Matplotlib Graph -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                📊 Gráfica Científica Exacta (SymPy + Matplotlib)
+              </span>
+            </div>
+            ${plotImgHtml}
+          </div>
+
+          ${
+            lesson.python_plot_code
+              ? `<details class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs mt-2">
+                   <summary class="cursor-pointer text-slate-400 hover:text-emerald-300 font-mono text-[11px]">🐍 Ver código Python que generó esta gráfica</summary>
+                   <pre class="mt-2 text-[11px] text-emerald-300 overflow-x-auto"><code>${escapeHtml(lesson.python_plot_code)}</code></pre>
+                 </details>`
+              : ""
+          }
+        </div>
+
+        <!-- Right: MiniMax image-01 AI Concept Illustration -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-400">
+                🎨 Ilustración Conceptual (${escapeHtml(conceptImgSource)})
+              </span>
+            </div>
+
+            <div id="conceptImageContainer" class="bg-slate-950 rounded-xl p-2 border border-slate-800 flex items-center justify-center min-h-[220px]">
+              ${
+                conceptImgUrl
+                  ? `<img id="conceptImageEl" src="${conceptImgUrl}" alt="Ilustración Conceptual" class="w-full max-h-[340px] object-contain rounded-lg" />`
+                  : `<div class="text-xs text-slate-400">Genera una ilustración visual con MiniMax image-01</div>`
+              }
+            </div>
+          </div>
+
+          <!-- Custom MiniMax image-01 Prompt Box -->
+          <div class="space-y-2 pt-2 border-t border-slate-800">
+            <label class="block text-[11px] text-slate-400">
+              ¿Quieres visualizar otra escena de este tema con el modelo <strong class="text-amber-300">MiniMax image-01</strong>?
+            </label>
+            <div class="flex gap-2">
+              <input id="customImagePromptInput" type="text" value="${escapeHtml(defaultImgPrompt)}"
+                class="flex-1 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-xs text-white focus:border-amber-500 focus:outline-none" />
+              <button id="regenImageBtn" onclick="regenerateConceptImage(${day})"
+                class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white text-xs font-bold shrink-0 transition">
+                🎨 Generar IA
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Worked Examples -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+        <div class="text-xs font-bold uppercase tracking-wider text-sky-400">
+          ✏️ 2. Ejemplos Resueltos Paso a Paso
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          ${examplesHtml}
+        </div>
+
+        ${
+          mistakesHtml
+            ? `<div class="p-4 rounded-2xl bg-rose-950/30 border border-rose-500/30 space-y-2 mt-4">
+                 <div class="text-xs font-bold uppercase tracking-wider text-rose-400">
+                   ⚠️ Errores Típicos en Exámenes (¡Evítalos!)
+                 </div>
+                 <ul class="list-disc ml-5 space-y-1">
+                   ${mistakesHtml}
+                 </ul>
+               </div>`
+            : ""
+        }
+      </div>
+
+      <!-- Graduated Exercises -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-purple-400">
+            🏋️ 3. Laboratorio de Ejercicios Graduados (Con Pistas y Solución)
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Intenta resolverlos primero en papel. Si te atascas, abre la pista o llévalo al pizarrón interactivo.
+          </p>
+        </div>
+        <div class="space-y-3.5">
+          ${exercisesHtml}
+        </div>
+      </div>
+
+      <!-- Bottom Day Navigation Bar -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
+        <button onclick="${day > 1 ? `openAcademyDayLesson(${day - 1})` : "showAcademyCalendarView()"}"
+          class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition">
+          ${day > 1 ? `← Ir al Día ${day - 1}` : "← Volver al Calendario"}
+        </button>
+
+        <button onclick="completeAndAdvanceDay(${day})"
+          class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-600 hover:from-emerald-400 hover:to-sky-500 text-white text-xs sm:text-sm font-bold shadow-lg transition flex items-center justify-center gap-2">
+          <span>✓ Completar Día ${day} y Avanzar al Día ${day < 30 ? day + 1 : 1}</span>
+          <span>➔</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  if (typeof renderMathInElement === "function") {
+    renderMathInElement(contentEl, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+        { left: "\\[", right: "\\]", display: true },
+        { left: "\\(", right: "\\)", display: false },
+      ],
+      throwOnError: false,
+    });
+  }
+}
+
+async function regenerateConceptImage(dayNumber) {
+  const input = document.getElementById("customImagePromptInput");
+  const btn = document.getElementById("regenImageBtn");
+  const container = document.getElementById("conceptImageContainer");
+  if (!input || !container) return;
+
+  const prompt = input.value.trim();
+  if (!prompt) return;
+
+  btn.disabled = true;
+  btn.textContent = "⏳ Generando...";
+  container.innerHTML = `<div class="text-xs text-amber-300 animate-pulse py-12">🎨 Creando imagen con MiniMax image-01...</div>`;
+
+  try {
+    const res = await fetch("/api/academy/generate-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt,
+        day: dayNumber,
+        api_key: document.getElementById("customApiKey") ? document.getElementById("customApiKey").value : "",
+        base_url: document.getElementById("customBaseUrl") ? document.getElementById("customBaseUrl").value : "",
+      }),
+    });
+    const data = await res.json();
+    if (data.image_url) {
+      container.innerHTML = `<img src="${data.image_url}" alt="Ilustración IA" class="w-full max-h-[340px] object-contain rounded-lg" />`;
+      if (cachedAcademyLessons[dayNumber]) {
+        cachedAcademyLessons[dayNumber].concept_image = data.image_url;
+        cachedAcademyLessons[dayNumber].concept_image_source = data.source || "MiniMax image-01";
+      }
+    }
+  } catch (e) {
+    container.innerHTML = `<div class="text-xs text-rose-400 p-4">Error al generar imagen: ${escapeHtml(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🎨 Generar IA";
+  }
+}
+
+function completeAndAdvanceDay(dayNumber) {
+  const completed = getCompletedDays();
+  if (!completed.includes(dayNumber)) {
+    completed.push(dayNumber);
+    saveCompletedDays(completed);
+    updateAcademyProgressUI();
+  }
+  if (dayNumber < 30) {
+    openAcademyDayLesson(dayNumber + 1);
+  } else {
+    showAcademyCalendarView();
+  }
+}
+
+function practiceExerciseInBoard(promptText) {
+  closeAcademyModal();
+  const input = document.getElementById("promptInput");
+  if (input) {
+    input.value = promptText;
+    input.focus();
+    sendProblem();
+  }
+}
+
+window.openAcademyModal = openAcademyModal;
+window.closeAcademyModal = closeAcademyModal;
+window.showAcademyCalendarView = showAcademyCalendarView;
+window.renderAcademyCalendar = renderAcademyCalendar;
+window.openAcademyDayLesson = openAcademyDayLesson;
+window.openNextUnfinishedDay = openNextUnfinishedDay;
+window.toggleDayComplete = toggleDayComplete;
+window.regenerateConceptImage = regenerateConceptImage;
+window.completeAndAdvanceDay = completeAndAdvanceDay;
+window.practiceExerciseInBoard = practiceExerciseInBoard;
+

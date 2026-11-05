@@ -15,6 +15,7 @@ from openai import OpenAI
 from sandbox import execute_math_physics_code
 from local_professor import solve_locally_as_professor
 from classroom import generate_classroom_lesson
+from academy import get_curriculum, generate_day_lesson, generate_minimax_concept_image
 
 load_dotenv()
 
@@ -375,6 +376,57 @@ async def create_classroom_slides(payload: Dict[str, Any]):
         model=resolved_model,
     )
     return JSONResponse(deck)
+
+
+@app.get("/api/academy/curriculum")
+async def academy_curriculum():
+    """
+    Returns the complete 30-day progressive engineering & math curriculum calendar.
+    """
+    return JSONResponse(get_curriculum())
+
+
+@app.post("/api/academy/lesson")
+async def academy_day_lesson(payload: Dict[str, Any]):
+    """
+    Generates a full day's masterclass lesson (detailed explanation with tips,
+    rigorous mathematical proof, worked examples, Matplotlib plot, MiniMax image-01
+    illustration, graduated exercises, and mini-quiz).
+    """
+    day_number = int(payload.get("day", 1))
+    custom_key = payload.get("api_key", "")
+    custom_model = payload.get("model", "")
+    custom_base_url = payload.get("base_url", "")
+    generate_ai_image = bool(payload.get("generate_ai_image", True))
+
+    resolved_key, resolved_base_url, resolved_model, _ = get_config(custom_key, custom_model, custom_base_url)
+    lesson = await generate_day_lesson(
+        day_number=day_number,
+        api_key=resolved_key,
+        base_url=resolved_base_url,
+        model=resolved_model,
+        generate_ai_image=generate_ai_image,
+    )
+    return JSONResponse(lesson)
+
+
+@app.post("/api/academy/generate-image")
+async def academy_generate_image(payload: Dict[str, Any]):
+    """
+    Generates or regenerates an educational illustration using MiniMax image-01.
+    """
+    prompt = payload.get("prompt", "Educational 3D illustration of mathematics and engineering")
+    day_number = int(payload.get("day", 1))
+    custom_key = payload.get("api_key", "")
+    custom_base_url = payload.get("base_url", "")
+    resolved_key, resolved_base_url, _, _ = get_config(custom_key, None, custom_base_url)
+    img_res = await generate_minimax_concept_image(
+        prompt=prompt,
+        api_key=resolved_key,
+        base_url=resolved_base_url,
+        day_number=day_number,
+    )
+    return JSONResponse(img_res)
 
 
 @app.post("/api/run-sandbox")
